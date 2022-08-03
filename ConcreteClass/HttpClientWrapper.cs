@@ -95,6 +95,20 @@ public class HttpClientWrapper : IHttpClientWrapper
         if (response.IsSuccessStatusCode is not true)
             throw new Exception("PostAsync - add - Error");
     }
+    public async Task<TReturnType> PostAsync<TInputType, TReturnType>(string add, TInputType Data, CancellationToken cancellationToken, string name, string token = "") where TReturnType: class
+    {
+        var client = name switch { "" or null => HttpClientFactory.CreateClient(), _ => HttpClientFactory.CreateClient(name) };
+
+        PrepareClient(token, client);
+        StringContent stringContent = new(SerializeObject(Data), Encoding.UTF8, "application/json");
+        using var response = await client.PostAsync(add, stringContent, cancellationToken);
+        if (response.IsSuccessStatusCode is not true)
+            throw new Exception("PostAsync - add - Error");
+        var responseInString = await response.Content.ReadAsStringAsync(cancellationToken);
+
+        var responseInT = DeserializeObject<ApiResult<TReturnType>>(responseInString);
+        return responseInT.Data;
+    }
 
     public async Task<bool> PutAsync<TInputType, TReturnType>(string add, TInputType Data, CancellationToken cancellationToken, string name, string token = "") where TReturnType : class
     {

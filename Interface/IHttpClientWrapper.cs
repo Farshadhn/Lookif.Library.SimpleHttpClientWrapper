@@ -8,6 +8,7 @@ public interface IHttpClientWrapper
     Task<TReturnType> GetSpecificAsync<TInputType, TReturnType>(string add, TInputType Data, CancellationToken cancellationToken, string name, string token = "") where TReturnType : class;
 
     Task PostAsync<TInputType>(string add, TInputType Data, CancellationToken cancellationToken, string name, string token = "");
+    Task<TReturnType> PostAsync<TInputType, TReturnType>(string add, TInputType Data, CancellationToken cancellationToken, string name, string token = "") where TReturnType : class;
     Task<bool> PutAsync<TInputType, TReturnType>(string add, TInputType Data, CancellationToken cancellationToken, string name, string token = "") where TReturnType : class;
     Task<bool> PutAsync<TReturnType>(string add, CancellationToken cancellationToken, string name, string token = "") where TReturnType : class;
 }
