@@ -39,10 +39,39 @@ public class HttpClientWrapper : IHttpClientWrapper
 
 
     }
- 
 
 
- 
+    public async Task<TReturnType> FilterAsync<TFilter, TReturnType>(string add, TFilter filter, CancellationToken cancellationToken, string name, string token = "") where TReturnType : class
+    {
+        var client = name switch { "" or null => HttpClientFactory.CreateClient(), _ => HttpClientFactory.CreateClient(name) };
+
+        PrepareClient(token, client);
+        HttpRequestMessage request = new(HttpMethod.Get, client.BaseAddress + add);
+        request.Content = new StringContent(SerializeObject(filter),
+                                                   Encoding.UTF8,
+                                                   "application/Json");
+
+
+        using var response = await client.SendAsync(request, cancellationToken);
+        var responseInString = await response.Content.ReadAsStringAsync(cancellationToken);
+        if (response.IsSuccessStatusCode is not true)
+            throw GetCorrespondingException(response.StatusCode, responseInString);
+
+
+
+
+        var responseInT = DeserializeObject<TReturnType>(responseInString);
+        return responseInT;
+
+
+
+
+
+       
+       
+    }
+
+
 
     public async Task PostAsync<TInputType>(string add, TInputType Data, CancellationToken cancellationToken, string name, string token = "")
     {
@@ -120,6 +149,7 @@ public class HttpClientWrapper : IHttpClientWrapper
               HttpStatusCode.NotFound => new NotFoundException(response),
               _ => new Exception(response)
           };
+
 
 
     #endregion
